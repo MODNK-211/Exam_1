@@ -1,0 +1,146 @@
+/* General body styling for all pages */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+
+/* Apply centering to all background pages */
+.login-page,
+.registration-page,
+.room-application-page,
+.admin-dashboard,
+.student-dashboard,
+.room-assignment-page {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Background for the login page */
+.login-page {
+    background: url('../images/download_1.jpeg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Background for the registration page */
+.registration-page {
+    background: url('../images/download_2.jpeg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Background for the room application page */
+.room-application-page {
+    background: url('../images/download.jpeg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Background for the admin dashboard */
+.admin-dashboard {
+    background: url('../images/images_1.jpeg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Background for the student dashboard */
+.student-dashboard {
+    background: url('../images/images_2.jpeg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Background for the room assignment page */
+.room-assignment-page {
+    background: url('../images/images_3.jpeg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Container styling */
+.container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.9); /* Slightly transparent white background */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 800px;
+}
+
+/* Form styling */
+form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+label, input, button {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+thead th {
+    background-color: #ff0000; /* Red background */
+    color: #ffffff; /* White text */
+    padding: 10px;
+}
+
+tbody td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #ffe6e6; /* Light red */
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #ffffff; /* White */
+}
+
+/* Button styling */
+button {
+    padding: 10px 15px;
+    background-color: #ff0000; /* Red background */
+    color: #ffffff; /* White text */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #cc0000; /* Darker red on hover */
+}
+
+/* List styling */
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul li {
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    background-color: #ffe6e6; /* Light red */
+    border-radius: 4px;
+    text-align: center;
+}

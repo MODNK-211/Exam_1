@@ -1,0 +1,18 @@
+const { readFile, writeFile } = require('../utils/fileHelper'); // Added readFile import
+
+async function updateApplication(applicationId, newStatus) {
+  try {
+    const applications = await readFile('applications.json');
+    const applicationIndex = applications.findIndex(app => app.applicationId === applicationId);
+
+    if (applicationIndex === -1) {
+      throw new Error('Application not found');
+    }
+
+    applications[applicationIndex].status = newStatus;  // Update status
+    await writeFile('applications.json', applications);  // Save back to file
+    console.log('Application status updated!');
+  } catch (error) {
+    console.error('Error updating application:', error);
+  }
+}

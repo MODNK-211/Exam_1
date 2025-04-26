@@ -1,0 +1,14 @@
+[
+  {
+    "roomId": 1,
+    "roomType": "Single",
+    "capacity": 1,
+    "available": true
+  },
+  {
+    "roomId": 2,
+    "roomType": "Double",
+    "capacity": 2,
+    "available": true
+  }
+]
