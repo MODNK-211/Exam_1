@@ -1,41 +1,43 @@
 document.addEventListener("DOMContentLoaded", async () => {
     const assignedRoomDiv = document.getElementById("assignedRoom");
+    const applicationStatusDiv = document.getElementById("applicationStatus");
 
     async function fetchAssignedRoom() {
         try {
-            const studentId = localStorage.getItem('userId'); // Assume the student's ID is stored in localStorage
-            console.log('Student ID:', studentId); // Debugging line to check the student ID
-            console.log('Token:', localStorage.getItem('token')); // Debugging line to check the token
-            console.log('User Type:', localStorage.getItem('userType')); // Debugging line to check the user type
-            if (!studentId) {
-                assignedRoomDiv.innerHTML = '<p>Error: No student ID found. Please log in again.</p>';
+            const studentId = localStorage.getItem("studentId"); // Assuming the student ID is stored in localStorage
+            const token = localStorage.getItem("token");
+
+            if (!studentId || !token) {
+                alert("You must be logged in to view your dashboard.");
+                window.location.href = "login.html"; // Redirect to login if not logged in
                 return;
             }
 
             const response = await fetch(`http://localhost:3000/api/student/dashboard/${studentId}`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token if required
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
             if (!response.ok) {
-                if (response.status === 404) {
-                    assignedRoomDiv.innerHTML = '<p>No room assignment found.</p>';
-                } else {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return;
+                throw new Error("Failed to fetch student data");
             }
 
-            const { applicationStatus, assignedRoom } = await response.json();
+            const data = await response.json();
+            const { assignedRoom, applicationStatus } = data;
 
-            // Display the assigned room details
-            assignedRoomDiv.innerHTML = assignedRoom
-                ? `<p><strong>Assigned Room:</strong> ${assignedRoom}</p>`
-                : `<p><strong>Application Status:</strong> ${applicationStatus}</p>`;
+            // Display assigned room or application status
+            if (assignedRoom) {
+                assignedRoomDiv.innerHTML = `<p><strong>Assigned Room:</strong> ${assignedRoom.name}</p>`;
+            } else {
+                assignedRoomDiv.innerHTML = `<p>No room assigned yet.</p>`;
+            }
+
+            applicationStatusDiv.innerHTML = `<p><strong>Application Status:</strong> ${applicationStatus}</p>`;
+
         } catch (error) {
-            console.error('Error fetching assigned room:', error);
-            assignedRoomDiv.innerHTML = '<p>Error fetching assigned room details. Please try again later.</p>';
+            console.error("Error fetching assigned room:", error);
+            assignedRoomDiv.innerHTML = "<p>Error fetching your assigned room. Please try again later.</p>";
         }
     }
 

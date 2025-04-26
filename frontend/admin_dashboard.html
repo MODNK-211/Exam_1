@@ -1,31 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="admin-dashboard">
     <div class="container">
-        <h1>Admin Dashboard</h1>
-        <p>Welcome, Admin! Below is the list of room applications:</p>
-        <table id="applicationsTable">
-            <thead>
-                <tr>
-                    <th>Application ID</th>
-                    <th>Student Name</th>
-                    <th>Room Type</th>
-                    <th>Duration</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="6">No applications available</td>
-                </tr>
-            </tbody>
-        </table>
+        <h1 class="dashboard-header">Admin Dashboard</h1>
+        <div class="applications">
+            <h2>Pending Applications</h2>
+            <table class="applications-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Room Preference</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="applicationsList">
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+        </div>
     </div>
-    <script src="admin_dashboard.js"></script>
+    <script src="js/admin_dashboard.js"></script>
 </body>
 </html>

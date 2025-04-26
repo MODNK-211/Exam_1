@@ -1,63 +1,51 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const registrationForm = document.getElementById("registrationForm");
-    const roomApplicationForm = document.getElementById("roomApplicationForm");
+document.addEventListener("DOMContentLoaded", async () => {
+    const roomPreferenceSelect = document.getElementById("roomPreference");
 
-    // Handle student registration
-    if (registrationForm) {
-        registrationForm.addEventListener("submit", (event) => {
-            event.preventDefault();
+    // Fetch available rooms and populate the room preference dropdown
+    try {
+        const response = await fetch("http://localhost:3000/api/rooms"); // Assume an API endpoint to fetch available rooms
+        const rooms = await response.json();
 
-            const name = document.getElementById("name").value.trim();
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
-
-            if (!name || !email || !password) {
-                alert("Please fill out all fields.");
-                return;
-            }
-
-            // Simulate registration (replace with backend API call)
-            console.log("Student Registered:", { name, email, password });
-            alert("Registration successful! Please log in.");
-            window.location.href = "login.html";
+        rooms.forEach(room => {
+            const option = document.createElement("option");
+            option.value = room.id;
+            option.textContent = room.name;
+            roomPreferenceSelect.appendChild(option);
         });
+    } catch (error) {
+        console.error("Error fetching rooms:", error);
     }
 
-    // Handle room application
-    if (roomApplicationForm) {
-        roomApplicationForm.addEventListener("submit", async (event) => {
-            event.preventDefault();
+    // Handle form submission
+    document.getElementById("roomApplicationForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-            const roomType = document.getElementById("roomType").value.trim();
-            const duration = document.getElementById("duration").value.trim();
-            const email = localStorage.getItem("email");
-
-            if (!roomType || !duration || !email) {
-                alert("Please fill out all fields.");
-                return;
+        const data = {
+            roomPreference: document.getElementById("roomPreference").value,
+            studentDetails: {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value
             }
+        };
 
-            try {
-                const response = await fetch("http://localhost:5000/api/applications/apply", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    },
-                    body: JSON.stringify({ studentName: "Student", email, roomType, duration }),
-                });
+        try {
+            const response = await fetch("http://localhost:3000/api/student/apply", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
 
-                const result = await response.json();
-                if (response.ok) {
-                    alert("Application submitted successfully!");
-                    roomApplicationForm.reset();
-                } else {
-                    alert(result.error || "Application failed.");
-                }
-            } catch (error) {
-                console.error("Error submitting application:", error);
-                alert("An error occurred. Please try again.");
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message || "Application submitted successfully!");
+                // Optionally, redirect or reset the form
+                window.location.href = "student_dashboard.html"; // Assuming there's a dashboard page
+            } else {
+                alert(result.message || "Failed to submit application. Please try again.");
             }
-        });
-    }
+        } catch (error) {
+            console.error("Error submitting application:", error);
+            alert("An error occurred. Please try again later.");
+        }
+    });
 });
