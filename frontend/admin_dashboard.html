@@ -3,29 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Admin Dashboard | Academic City University</title>
+    <link rel="stylesheet" href="css/admin_dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="admin-dashboard">
-    <div class="container">
-        <h1 class="dashboard-header">Admin Dashboard</h1>
-        <div class="applications">
-            <h2>Pending Applications</h2>
-            <table class="applications-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Room Preference</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="applicationsList">
-                    <!-- Dynamically populated -->
-                </tbody>
-            </table>
+<body>
+    <header class="dashboard-header">
+        <div class="header-left">
+            <img src="images/acity_logo.png" alt="Logo" class="header-logo">
+            <span class="header-title">Admin Dashboard</span>
         </div>
+        <div class="header-right">
+            <span class="admin-name" id="adminName">Admin</span>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </header>
+    <div class="dashboard-container">
+        <nav class="dashboard-sidebar">
+            <ul>
+                <li><a href="#" id="applicationsLink"><span class="sidebar-icon">📋</span> Applications</a></li>
+                <li><a href="#" id="roomsLink"><span class="sidebar-icon">🏢</span> Rooms</a></li>
+                <li><a href="#" id="assignmentsLink"><span class="sidebar-icon">🛏️</span> Assignments</a></li>
+                <li><a href="#" id="announcementsLink"><span class="sidebar-icon">📢</span> Announcements</a></li>
+            </ul>
+        </nav>
+        <main class="dashboard-main">
+            <section class="applications-section admin-section" style="display:none;">
+                <h3>Student Applications</h3>
+                <div id="applicationsTable"></div>
+            </section>
+            <section class="rooms-section admin-section" style="display:none;">
+                <h3>All Rooms</h3>
+                <div id="roomsTable"></div>
+            </section>
+            <section class="assignments-section admin-section" style="display:none;">
+                <h3>Room Assignments</h3>
+                <form id="assignRoomForm" class="assign-room-form">
+                    <label for="assignStudent">Student:</label>
+                    <select id="assignStudent" name="assignStudent" required></select>
+                    <label for="assignRoom">Room:</label>
+                    <select id="assignRoom" name="assignRoom" required></select>
+                    <button type="submit" class="admin-btn accept">Assign Room</button>
+                    <span id="assignRoomMsg" style="margin-left:1rem;"></span>
+                </form>
+                <div id="assignmentsTable"></div>
+            </section>
+            <section class="announcements-section admin-section" style="display:none;">
+                <h3>Announcements</h3>
+                <ul id="adminAnnouncementsList">
+                    <li>No announcements at this time.</li>
+                </ul>
+            </section>
+        </main>
     </div>
-    <script src="js/admin_dashboard.js"></script>
+    <script src="admin_dashboard.js"></script>
 </body>
 </html>

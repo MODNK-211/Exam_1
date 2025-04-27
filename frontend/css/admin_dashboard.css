@@ -1,0 +1,258 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', Arial, sans-serif;
+    background: #f6f7fb;
+    color: #222;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.header-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #b71c1c;
+    letter-spacing: 1px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.admin-name {
+    font-weight: 500;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.logout-btn {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.logout-btn:hover {
+    background: #1256a3;
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 90vh;
+}
+
+.dashboard-sidebar {
+    width: 220px;
+    background: #fff;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.03);
+    padding: 2rem 0 2rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.dashboard-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+.dashboard-sidebar li {
+    width: 100%;
+    margin-bottom: 1.2rem;
+}
+.dashboard-sidebar a {
+    display: block;
+    width: 100%;
+    padding: 0.7rem 2rem;
+    color: #222;
+    text-decoration: none;
+    font-size: 1.08rem;
+    font-weight: 500;
+    border-left: 4px solid transparent;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.dashboard-sidebar a:hover, .dashboard-sidebar a.active {
+    background: #f6f7fb;
+    border-left: 4px solid #b71c1c;
+    color: #b71c1c;
+}
+
+.dashboard-main {
+    flex: 1;
+    padding: 2.5rem 2.5rem 2rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.admin-section h3 {
+    color: #1976d2;
+    margin-top: 0;
+}
+
+/* Table Styles */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+    margin-top: 1rem;
+}
+.admin-table th, .admin-table td {
+    padding: 1rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+.admin-table th {
+    background: #f6f7fb;
+    color: #1976d2;
+    font-weight: 700;
+}
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+.admin-table-action {
+    display: flex;
+    gap: 0.7rem;
+}
+.admin-btn {
+    padding: 0.4rem 1rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.admin-btn.accept {
+    background: #43a047;
+    color: #fff;
+}
+.admin-btn.accept:hover {
+    background: #2e7031;
+}
+.admin-btn.reject {
+    background: #e53935;
+    color: #fff;
+}
+.admin-btn.reject:hover {
+    background: #ab000d;
+}
+
+.sidebar-icon {
+    display: inline-block;
+    width: 1.5em;
+    text-align: center;
+    margin-right: 0.7em;
+    font-size: 1.2em;
+    vertical-align: middle;
+    opacity: 0.85;
+}
+
+@media (max-width: 900px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+    .dashboard-sidebar {
+        width: 100vw;
+        flex-direction: row;
+        justify-content: space-around;
+        box-shadow: none;
+        padding: 1rem 0;
+    }
+    .dashboard-sidebar ul {
+        display: flex;
+        flex-direction: row;
+        width: 100vw;
+        justify-content: space-around;
+    }
+    .dashboard-sidebar li {
+        margin-bottom: 0;
+    }
+    .dashboard-main {
+        padding: 1.2rem 0.5rem 1rem 0.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-header {
+        flex-direction: column;
+        gap: 0.7rem;
+        padding: 0.7rem 0.5rem;
+    }
+    .header-title {
+        font-size: 1.1rem;
+    }
+    .dashboard-sidebar a {
+        font-size: 0.98rem;
+        padding: 0.5rem 0.7rem;
+    }
+    .dashboard-main {
+        gap: 1.2rem;
+    }
+    .admin-table th, .admin-table td {
+        padding: 0.5rem 0.3rem;
+    }
+}
+
+.assign-room-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: #fff;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.assign-room-form label {
+    font-weight: 500;
+    color: #1976d2;
+}
+.assign-room-form select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #f7f7f7;
+    transition: border-color 0.2s;
+}
+.assign-room-form select:focus {
+    outline: none;
+    border-color: #b71c1c;
+    background: #fff;
+} 

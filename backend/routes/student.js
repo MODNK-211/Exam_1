@@ -93,4 +93,47 @@ router.get('/dashboard', authenticateStudent, async (req, res) => {
   }
 });
 
+// GET /api/student/rooms - List available rooms with images and details
+router.get('/rooms', async (req, res) => {
+  // In a real app, fetch from DB. Here, use static data for demo.
+  const rooms = [
+    {
+      id: 1,
+      name: 'AC Double Room',
+      description: 'Spacious air-conditioned room for two students.',
+      occupancy: 2,
+      image: 'hostel_pic_four_Ac_twoinaroom.jpg'
+    },
+    {
+      id: 2,
+      name: 'Single AC Room',
+      description: 'Private air-conditioned room for one student.',
+      occupancy: 1,
+      image: 'hostel_pic_three_single_ac.jpg'
+    },
+    {
+      id: 3,
+      name: 'Standard Double Room',
+      description: 'Comfortable room for two with fan.',
+      occupancy: 2,
+      image: 'two_in_a_room_with_fan.jpg'
+    },
+    {
+      id: 4,
+      name: 'Hostel Block A',
+      description: 'Modern hostel block with shared amenities.',
+      occupancy: 4,
+      image: 'hostel_pic_one.jpg'
+    },
+    {
+      id: 5,
+      name: 'Hostel Block B',
+      description: 'Spacious rooms with great views.',
+      occupancy: 3,
+      image: 'hostel_pic_two.jpg'
+    }
+  ];
+  res.json(rooms);
+});
+
 module.exports = router;

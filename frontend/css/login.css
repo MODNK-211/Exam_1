@@ -1,0 +1,329 @@
+.login-page {
+    min-height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('../images/download.jpeg') no-repeat center center/cover;
+    z-index: 0;
+    filter: contrast(1.08) brightness(1.08) saturate(1.1);
+}
+
+.background-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.18); /* subtle dark overlay */
+    pointer-events: none;
+}
+
+/* White curved/angled shape at bottom left */
+.bottom-left-shape {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 45vw;
+    height: 45vh;
+    background: white;
+    z-index: 1;
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.10);
+    clip-path: ellipse(60% 60% at 0% 100%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.login-main-container {
+    position: relative;
+    z-index: 2;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    padding: 2.5rem 2.5rem 1.5rem 2.5rem;
+    max-width: 370px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 40px;
+}
+
+.login-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.login-title {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: #222;
+}
+
+.login-card-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin-left: 10px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #eee;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    position: relative;
+}
+
+.form-group input {
+    padding: 0.9rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #f7f7f7;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #d32f2f;
+    background: #fff;
+}
+
+.password-group {
+    position: relative;
+}
+
+.forgot-pwd {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.95rem;
+}
+
+.lock-icon {
+    font-size: 1rem;
+    color: #888;
+    margin-right: 2px;
+}
+
+.forgot-pwd a {
+    color: #222;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.forgot-pwd a:hover {
+    color: #d32f2f;
+    text-decoration: underline;
+}
+
+.login-button {
+    background: #1976d2;
+    color: #fff;
+    padding: 0.9rem 0;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.login-button:hover {
+    background: #1256a3;
+}
+
+.login-button:disabled {
+    background: #bdbdbd;
+    cursor: not-allowed;
+}
+
+.loading-spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #1976d2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.google-login {
+    margin: 1.2rem 0 0.2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 0.7rem 0;
+    font-size: 1rem;
+    color: #444;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+}
+
+.google-login:hover {
+    box-shadow: 0 2px 8px rgba(66,133,244,0.08);
+}
+
+.google-logo {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-size: 0.92rem;
+    margin-top: 0.2rem;
+    display: none;
+}
+
+.login-footer-logo {
+    position: absolute;
+    left: 2.5vw;
+    bottom: 2.5vh;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    z-index: 3;
+}
+
+.footer-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.footer-text {
+    color: #b71c1c;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.register-link a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+    .bottom-left-shape {
+        width: 70vw;
+        height: 28vh;
+        clip-path: ellipse(80% 60% at 0% 100%);
+    }
+}
+
+@media (max-width: 600px) {
+    .login-card {
+        padding: 1.2rem 0.5rem 1rem 0.5rem;
+        max-width: 98vw;
+    }
+    .login-footer-logo {
+        left: 1vw;
+        bottom: 1vh;
+    }
+    .bottom-left-shape {
+        width: 100vw;
+        height: 18vh;
+        clip-path: ellipse(100% 60% at 0% 100%);
+    }
+}
+
+.room-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+select {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #f7f7f7;
+    transition: border-color 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+}
+
+select:focus {
+    outline: none;
+    border-color: #d32f2f;
+    background-color: #fff;
+} 

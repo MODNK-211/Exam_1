@@ -42,4 +42,173 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     fetchAssignedRoom();
+
+    // Section switching logic
+    const sections = document.querySelectorAll('.dashboard-section');
+    const showSection = (selector) => {
+        sections.forEach(sec => sec.style.display = 'none');
+        document.querySelector(selector).style.display = '';
+    };
+
+    // Fetch and display available rooms
+    async function loadRoomListings() {
+        const roomListingsDiv = document.getElementById('roomListings');
+        roomListingsDiv.innerHTML = '<div>Loading rooms...</div>';
+        try {
+            const response = await fetch('http://localhost:3000/api/student/rooms');
+            const rooms = await response.json();
+            roomListingsDiv.innerHTML = rooms.map(room => `
+                <div class="room-card">
+                    <img src="images/${room.image}" alt="${room.name}" class="room-card-img" />
+                    <div class="room-card-body">
+                        <div class="room-card-title">${room.name}</div>
+                        <div class="room-card-desc">${room.description}</div>
+                        <div class="room-card-occupancy">Occupancy: ${room.occupancy}</div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            roomListingsDiv.innerHTML = '<div>Error loading rooms.</div>';
+        }
+    }
+
+    // Fetch and display application status and assigned room
+    async function loadApplicationStatus() {
+        const token = localStorage.getItem('token');
+        const statusDiv = document.getElementById('roomStatus');
+        const announcementsList = document.getElementById('announcementsList');
+        if (!token || !statusDiv) return;
+        statusDiv.textContent = 'Loading...';
+        try {
+            const response = await fetch('http://localhost:3000/api/student/dashboard', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                let notif = '';
+                if (data.applicationStatus === 'approved') {
+                    notif = '<li style="color: #43a047; font-weight: 600;">Your application was approved! Please check your assigned room.</li>';
+                } else if (data.applicationStatus === 'rejected') {
+                    notif = '<li style="color: #e53935; font-weight: 600;">Your application was rejected. Please contact admin.</li>';
+                }
+                if (announcementsList && notif) {
+                    announcementsList.innerHTML = notif;
+                }
+                statusDiv.innerHTML = `<strong>Application Status:</strong> ${data.applicationStatus || 'N/A'}<br>` +
+                    (data.assignedRoom ? `<strong>Assigned Room:</strong> ${data.assignedRoom}` : 'No room assigned yet.');
+            } else {
+                statusDiv.textContent = data.message || 'No application found.';
+                if (announcementsList) announcementsList.innerHTML = '';
+            }
+        } catch (err) {
+            statusDiv.textContent = 'Error loading status.';
+            if (announcementsList) announcementsList.innerHTML = '';
+        }
+    }
+
+    // Sidebar navigation: highlight active link and show/hide sections
+    const sidebarLinks = document.querySelectorAll('.dashboard-sidebar a');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            sidebarLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            // Show the corresponding section
+            if (this.id === 'roomListingsLink') {
+                showSection('.room-listings-section');
+                loadRoomListings();
+            } else if (this.id === 'applyRoomLink') {
+                showSection('.apply-room-section');
+            } else if (this.id === 'myRoomLink') {
+                showSection('.room-status-section');
+                loadApplicationStatus();
+            } else if (this.id === 'applicationStatusLink') {
+                showSection('.room-status-section');
+                loadApplicationStatus();
+            } else if (this.id === 'announcementsLink') {
+                showSection('.announcements-section');
+            } else {
+                showSection('.welcome-section');
+            }
+        });
+    });
+
+    // Show welcome section by default
+    showSection('.welcome-section');
+
+    // Auto-fill name and email in Apply for Room form
+    const studentName = localStorage.getItem('studentName') || 'Student';
+    const studentEmail = localStorage.getItem('studentEmail') || '';
+    document.getElementById('studentName').textContent = studentName;
+    document.getElementById('welcomeName').textContent = studentName.split(' ')[0];
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    if (nameInput) nameInput.value = studentName;
+    if (emailInput) emailInput.value = studentEmail;
+
+    // Logout functionality
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn.addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    });
+
+    // Populate Apply for Room dropdown
+    async function populateRoomDropdown() {
+        const select = document.getElementById('roomPreference');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select Room</option>';
+        try {
+            const response = await fetch('http://localhost:3000/api/student/rooms');
+            const rooms = await response.json();
+            rooms.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room.id;
+                option.textContent = `${room.name} (Occupancy: ${room.occupancy})`;
+                select.appendChild(option);
+            });
+        } catch (err) {
+            select.innerHTML = '<option value="">Error loading rooms</option>';
+        }
+    }
+
+    // Handle Apply for Room form submission
+    const roomApplicationForm = document.getElementById('roomApplicationForm');
+    if (roomApplicationForm) {
+        roomApplicationForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const roomPreference = document.getElementById('roomPreference').value;
+            const token = localStorage.getItem('token');
+            const applicationMessage = document.getElementById('applicationMessage');
+            applicationMessage.textContent = 'Submitting...';
+            try {
+                const response = await fetch('http://localhost:3000/api/student/apply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ roomPreference })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    applicationMessage.textContent = data.message || 'Application submitted!';
+                } else {
+                    applicationMessage.textContent = data.message || 'Error submitting application.';
+                }
+            } catch (err) {
+                applicationMessage.textContent = 'Network error.';
+            }
+        });
+    }
+
+    // When Apply for Room section is shown, populate dropdown
+    const originalShowSection = showSection;
+    showSection = function(selector) {
+        sections.forEach(sec => sec.style.display = 'none');
+        document.querySelector(selector).style.display = '';
+        if (selector === '.apply-room-section') {
+            populateRoomDropdown();
+        }
+    };
 });
