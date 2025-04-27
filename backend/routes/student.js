@@ -41,6 +41,8 @@ router.post(
     const studentId = req.user.id;
 
     try {
+      console.log('Received application request:', { studentId, roomPreference });
+
       // Check if the student has already applied
       const existingApplication = await pool.query(
         'SELECT * FROM applications WHERE student_id = $1',
@@ -50,16 +52,38 @@ router.post(
         return res.status(400).json({ message: 'You have already applied for a room' });
       }
 
-      // Insert the application into the database
-      await pool.query(
-        'INSERT INTO applications (student_id, room_id, status) VALUES ($1, $2, $3)',
-        [studentId, roomPreference, 'pending']
+      // First, find a room that matches the preference and is available
+      const roomQuery = await pool.query(
+        'SELECT id FROM rooms WHERE name = $1 AND available = true',
+        [roomPreference]
       );
 
-      res.status(201).json({ message: 'Application submitted successfully' });
+      console.log('Room query result:', roomQuery.rows);
+
+      if (roomQuery.rows.length === 0) {
+        return res.status(400).json({ message: 'No available rooms match your preference' });
+      }
+
+      const roomId = roomQuery.rows[0].id;
+
+      // Insert the application into the database
+      const applicationResult = await pool.query(
+        'INSERT INTO applications (student_id, room_id, status) VALUES ($1, $2, $3) RETURNING *',
+        [studentId, roomId, 'pending']
+      );
+
+      console.log('Application created:', applicationResult.rows[0]);
+
+      res.status(201).json({ 
+        message: 'Application submitted successfully',
+        application: applicationResult.rows[0]
+      });
     } catch (error) {
-      console.error('Error submitting application:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      console.error('Detailed error in room application:', error);
+      res.status(500).json({ 
+        message: 'Internal server error',
+        error: error.message 
+      });
     }
   }
 );
@@ -71,21 +95,21 @@ router.get('/dashboard', authenticateStudent, async (req, res) => {
   try {
     // Fetch the student's application status
     const application = await pool.query(
-      'SELECT * FROM applications WHERE student_id = $1',
+      'SELECT a.*, r.name as room_name FROM applications a LEFT JOIN rooms r ON a.room_id = r.id WHERE a.student_id = $1',
       [studentId]
     );
 
     if (application.rows.length === 0) {
-      return res.status(404).json({ message: 'No application found' });
+      return res.json({
+        applicationStatus: 'not_applied',
+        assignedRoom: null
+      });
     }
-
-    const assignedRoom = application.rows[0].room_id
-      ? await pool.query('SELECT * FROM rooms WHERE id = $1', [application.rows[0].room_id])
-      : null;
 
     res.json({
       applicationStatus: application.rows[0].status,
-      assignedRoom: assignedRoom ? assignedRoom.rows[0].name : null,
+      assignedRoom: application.rows[0].room_name,
+      submittedDate: application.rows[0].created_at
     });
   } catch (error) {
     console.error('Error fetching application status:', error);
@@ -93,47 +117,15 @@ router.get('/dashboard', authenticateStudent, async (req, res) => {
   }
 });
 
-// GET /api/student/rooms - List available rooms with images and details
+// GET /api/student/rooms - List available rooms
 router.get('/rooms', async (req, res) => {
-  // In a real app, fetch from DB. Here, use static data for demo.
-  const rooms = [
-    {
-      id: 1,
-      name: 'AC Double Room',
-      description: 'Spacious air-conditioned room for two students.',
-      occupancy: 2,
-      image: 'hostel_pic_four_Ac_twoinaroom.jpg'
-    },
-    {
-      id: 2,
-      name: 'Single AC Room',
-      description: 'Private air-conditioned room for one student.',
-      occupancy: 1,
-      image: 'hostel_pic_three_single_ac.jpg'
-    },
-    {
-      id: 3,
-      name: 'Standard Double Room',
-      description: 'Comfortable room for two with fan.',
-      occupancy: 2,
-      image: 'two_in_a_room_with_fan.jpg'
-    },
-    {
-      id: 4,
-      name: 'Hostel Block A',
-      description: 'Modern hostel block with shared amenities.',
-      occupancy: 4,
-      image: 'hostel_pic_one.jpg'
-    },
-    {
-      id: 5,
-      name: 'Hostel Block B',
-      description: 'Spacious rooms with great views.',
-      occupancy: 3,
-      image: 'hostel_pic_two.jpg'
-    }
-  ];
-  res.json(rooms);
+  try {
+    const rooms = await pool.query('SELECT * FROM rooms WHERE available = true');
+    res.json(rooms.rows);
+  } catch (error) {
+    console.error('Error fetching rooms:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 module.exports = router;

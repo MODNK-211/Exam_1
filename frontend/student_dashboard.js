@@ -180,6 +180,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             const roomPreference = document.getElementById('roomPreference').value;
             const token = localStorage.getItem('token');
             const applicationMessage = document.getElementById('applicationMessage');
+
+            if (!roomPreference) {
+                applicationMessage.textContent = 'Please select a room preference';
+                applicationMessage.style.color = '#f44336';
+                return;
+            }
+
             applicationMessage.textContent = 'Submitting...';
             try {
                 const response = await fetch('http://localhost:3000/api/student/apply', {
@@ -192,12 +199,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    applicationMessage.textContent = data.message || 'Application submitted!';
+                    applicationMessage.textContent = 'Application submitted successfully!';
+                    applicationMessage.style.color = '#4CAF50';
+                    applicationForm.reset();
+                    // Refresh room status
+                    fetchRoomStatus();
                 } else {
-                    applicationMessage.textContent = data.message || 'Error submitting application.';
+                    applicationMessage.textContent = data.message || 'Error submitting application';
+                    applicationMessage.style.color = '#f44336';
                 }
-            } catch (err) {
-                applicationMessage.textContent = 'Network error.';
+            } catch (error) {
+                console.error('Error:', error);
+                applicationMessage.textContent = 'Error submitting application. Please try again.';
+                applicationMessage.style.color = '#f44336';
             }
         });
     }
@@ -211,4 +225,40 @@ document.addEventListener("DOMContentLoaded", async () => {
             populateRoomDropdown();
         }
     };
+
+    // Fetch and display room status
+    const fetchRoomStatus = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/student/dashboard', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch room status');
+            }
+
+            const data = await response.json();
+            
+            // Update room status
+            const roomStatusElement = document.getElementById('roomStatus');
+            if (data.assignedRoom) {
+                roomStatusElement.textContent = `Assigned to ${data.assignedRoom}`;
+            } else if (data.applicationStatus === 'pending') {
+                roomStatusElement.textContent = 'Your application is pending approval';
+            } else if (data.applicationStatus === 'not_applied') {
+                roomStatusElement.textContent = 'You have not applied for a room yet';
+            } else {
+                roomStatusElement.textContent = 'No room assigned yet';
+            }
+
+        } catch (error) {
+            console.error('Error fetching room status:', error);
+            document.getElementById('roomStatus').textContent = 'Error loading room status';
+        }
+    };
+
+    // Initial fetch
+    fetchRoomStatus();
 });

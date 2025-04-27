@@ -25,16 +25,17 @@ const setupSchema = async () => {
 
     CREATE TABLE IF NOT EXISTS rooms (
       id SERIAL PRIMARY KEY,
-      name VARCHAR(255),
+      name VARCHAR(255) UNIQUE,
       capacity INT,
-      available BOOLEAN
+      available BOOLEAN DEFAULT true
     );
 
     CREATE TABLE IF NOT EXISTS applications (
       id SERIAL PRIMARY KEY,
       student_id UUID REFERENCES users(id),
       room_id INT REFERENCES rooms(id),
-      status VARCHAR(50)
+      status VARCHAR(50),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS room_assignments (
@@ -47,6 +48,20 @@ const setupSchema = async () => {
   try {
     await pool.query(query);
     console.log('Schema set up successfully');
+    
+    // Insert initial room data if rooms table is empty
+    const roomCount = await pool.query('SELECT COUNT(*) FROM rooms');
+    if (roomCount.rows[0].count === '0') {
+      const insertRoomsQuery = `
+        INSERT INTO rooms (name, capacity, available) VALUES
+        ('Double Occupancy with Fan', 2, true),
+        ('Double Occupancy with AC', 2, true),
+        ('Single Occupancy with AC', 1, true),
+        ('Single Occupancy with Bathroom and Kitchen', 1, true)
+      `;
+      await pool.query(insertRoomsQuery);
+      console.log('Initial room data inserted');
+    }
   } catch (error) {
     console.error('Error setting up schema:', error);
     throw error;
