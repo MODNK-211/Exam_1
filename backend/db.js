@@ -1,5 +1,6 @@
 const { Pool } = require('pg');  // PostgreSQL client
 const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
 dotenv.config();
 
 // Get the DATABASE_URL from the environment variables
@@ -65,22 +66,73 @@ const setupSchema = async () => {
       console.log('Initial room data inserted');
     }
 
-    // Create a test admin user if no users exist
-    const userCount = await pool.query('SELECT COUNT(*) FROM users');
-    if (userCount.rows[0].count === '0') {
-      const bcrypt = require('bcryptjs');
-      const hashedPassword = await bcrypt.hash('admin123', 10);
-      const insertAdminQuery = `
-        INSERT INTO users (name, email, password, role) VALUES
-        ('Admin User', 'admin@example.com', $1, 'admin')
-      `;
-      await pool.query(insertAdminQuery, [hashedPassword]);
-      console.log('Test admin user created');
-    }
+    // Create admin user if it doesn't exist
+    await createAdminUser();
+    await restoreGriseldaApplication();
   } catch (error) {
     console.error('Error setting up schema:', error);
     throw error;
   }
+};
+
+const createAdminUser = async () => {
+    try {
+        // Check if admin user exists
+        const adminCheck = await pool.query('SELECT * FROM users WHERE email = $1', ['admin@example.com']);
+        
+        if (adminCheck.rows.length === 0) {
+            // Create admin user with hashed password
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            await pool.query(
+                'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)',
+                ['Admin User', 'admin@example.com', hashedPassword, 'admin']
+            );
+            console.log('Admin user created successfully');
+        } else {
+            // Update existing admin user to ensure correct role
+            await pool.query(
+                'UPDATE users SET role = $1 WHERE email = $2',
+                ['admin', 'admin@example.com']
+            );
+            console.log('Admin user role updated');
+        }
+    } catch (error) {
+        console.error('Error creating/updating admin user:', error);
+    }
+};
+
+// Restore Griselda's application
+const restoreGriseldaApplication = async () => {
+    try {
+        // Check if Griselda exists
+        const griseldaCheck = await pool.query('SELECT * FROM users WHERE email = $1', ['griselda@example.com']);
+        if (griseldaCheck.rows.length === 0) {
+            console.log('Griselda user not found');
+            return;
+        }
+
+        const griseldaId = griseldaCheck.rows[0].id;
+
+        // Check if application exists
+        const appCheck = await pool.query('SELECT * FROM applications WHERE student_id = $1', [griseldaId]);
+        if (appCheck.rows.length === 0) {
+            // Create application if it doesn't exist
+            await pool.query(
+                'INSERT INTO applications (student_id, status) VALUES ($1, $2)',
+                [griseldaId, 'approved']
+            );
+            console.log('Griselda application created');
+        } else {
+            // Update existing application
+            await pool.query(
+                'UPDATE applications SET status = $1 WHERE student_id = $2',
+                ['approved', griseldaId]
+            );
+            console.log('Griselda application restored');
+        }
+    } catch (error) {
+        console.error('Error restoring Griselda application:', error);
+    }
 };
 
 const connectToDatabase = async () => {

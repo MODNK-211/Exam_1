@@ -9,18 +9,20 @@ const router = express.Router();
 const authenticateStudent = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(401).json({ message: 'Unauthorized - No token provided' });
   }
 
   try {
     const decoded = jwt.verify(token, 'your_jwt_secret_key');
-    if (decoded.role !== 'student') {
-      return res.status(403).json({ message: 'Forbidden' });
+    // Allow both 'student' and 'admin' roles to access student routes
+    if (decoded.role !== 'student' && decoded.role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden - Invalid role' });
     }
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid token' });
+    console.error('Token verification error:', error);
+    return res.status(401).json({ message: 'Invalid token - Please log in again' });
   }
 };
 
@@ -105,23 +107,36 @@ router.get('/dashboard', authenticateStudent, async (req, res) => {
       return res.status(400).json({ message: 'User not found. Please log out and log in again.' });
     }
 
-    // Fetch the student's application status
+    // Fetch the student's application status with more details
     const application = await pool.query(
-      'SELECT a.*, r.name as room_name FROM applications a LEFT JOIN rooms r ON a.room_id = r.id WHERE a.student_id = $1',
+      `SELECT a.*, r.name as room_name, r.available, r.capacity 
+       FROM applications a 
+       LEFT JOIN rooms r ON a.room_id = r.id 
+       WHERE a.student_id = $1`,
       [studentId]
     );
 
     if (application.rows.length === 0) {
       return res.json({
         applicationStatus: 'not_applied',
-        assignedRoom: null
+        assignedRoom: null,
+        user: {
+          name: userCheck.rows[0].name,
+          email: userCheck.rows[0].email,
+          role: userCheck.rows[0].role
+        }
       });
     }
 
     res.json({
       applicationStatus: application.rows[0].status,
       assignedRoom: application.rows[0].room_name,
-      submittedDate: application.rows[0].created_at
+      submittedDate: application.rows[0].created_at,
+      user: {
+        name: userCheck.rows[0].name,
+        email: userCheck.rows[0].email,
+        role: userCheck.rows[0].role
+      }
     });
   } catch (error) {
     console.error('Error fetching application status:', error);
@@ -130,7 +145,7 @@ router.get('/dashboard', authenticateStudent, async (req, res) => {
 });
 
 // GET /api/student/rooms - List available rooms
-router.get('/rooms', async (req, res) => {
+router.get('/rooms', authenticateStudent, async (req, res) => {
   try {
     const rooms = await pool.query('SELECT * FROM rooms WHERE available = true');
     res.json(rooms.rows);

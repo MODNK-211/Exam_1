@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Academic City University</title>
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+    <div class="background-overlay"></div>
+    <div class="bottom-left-shape"></div>
+    <div class="login-main-container">
+        <div class="login-card">
+            <div class="login-card-header">
+                <span class="login-title">Admin Login</span>
+                <img src="images/acity_logo.png" alt="Academic City University Logo" class="login-card-logo">
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <input type="email" id="email" name="email" required placeholder="Admin Email">
+                    <div class="error-message" id="emailError"></div>
+                </div>
+                <div class="form-group password-group">
+                    <input type="password" id="password" name="password" required placeholder="Password">
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+                <button type="submit" class="login-button" id="loginButton">
+                    <span id="buttonText">LOG IN</span>
+                    <div class="loading-spinner" id="loadingSpinner"></div>
+                </button>
+            </form>
+            <div class="register-link">
+                <p>Student? <a href="login.html">Login as Student</a></p>
+            </div>
+        </div>
+        <div class="login-footer-logo">
+            <img src="images/acity_logo.png" alt="Academic City University Logo" class="footer-logo">
+            <div class="footer-text">ACADEMIC CITY<br>UNIVERSITY COLLEGE</div>
+        </div>
+    </div>
+    <script src="admin_login.js"></script>
+</body>
+</html> 

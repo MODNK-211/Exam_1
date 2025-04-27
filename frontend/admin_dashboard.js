@@ -147,28 +147,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             tableDiv.innerHTML = `
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Capacity</th>
-                            <th>Available</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rooms.map(room => `
-                            <tr>
-                                <td>${room.name}</td>
-                                <td>${room.capacity}</td>
-                                <td>${room.available ? 'Yes' : 'No'}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                <div class="room-grid">
+                    ${rooms.map(room => `
+                        <div class="room-card">
+                            <img src="images/${getRoomImage(room.name)}" alt="${room.name}" class="room-card-img">
+                            <div class="room-card-body">
+                                <h3 class="room-card-title">${room.name}</h3>
+                                <p class="room-card-desc">Capacity: ${room.capacity} students</p>
+                                <p class="room-card-status">Status: ${room.available ? 'Available' : 'Occupied'}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
             `;
         } catch (err) {
             tableDiv.innerHTML = '<div>Error loading rooms.</div>';
         }
+    }
+
+    // Helper function to get room image
+    function getRoomImage(roomName) {
+        const imageMap = {
+            'Double Occupancy with Fan': 'two_in_a_room_with_fan.jpg',
+            'Double Occupancy with AC': 'hostel_pic_four_Ac_twoinaroom.jpg',
+            'Single Occupancy with AC': 'hostel_pic_three_single_ac.jpg',
+            'Single Occupancy with Bathroom and Kitchen': 'hostel_pic_one.jpg'
+        };
+        return imageMap[roomName] || 'hostel_pic_one.jpg';
     }
 
     // Populate assign-room form
@@ -177,31 +182,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const roomSelect = document.getElementById('assignRoom');
         const msg = document.getElementById('assignRoomMsg');
         if (!studentSelect || !roomSelect) return;
+        
         studentSelect.innerHTML = '<option value="">Loading...</option>';
         roomSelect.innerHTML = '<option value="">Loading...</option>';
         msg.textContent = '';
+        
         try {
             // Fetch students without assigned rooms
             const studentsRes = await fetch('http://localhost:3000/api/admin/applications', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             const students = await studentsRes.json();
-            const unassigned = students.filter(s => !s.room_id && s.status === 'approved');
+            
+            // Filter for approved students who don't have a room assigned
+            const unassigned = students.filter(s => s.status === 'approved' && !s.room_id);
+            
             studentSelect.innerHTML = unassigned.length ?
                 unassigned.map(s => `<option value="${s.id}">${s.name} (${s.email})</option>`).join('') :
-                '<option value="">No approved students</option>';
+                '<option value="">No approved students without rooms</option>';
+            
             // Fetch available rooms
             const roomsRes = await fetch('http://localhost:3000/api/admin/rooms', {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             const rooms = await roomsRes.json();
             const available = rooms.filter(r => r.available);
+            
             roomSelect.innerHTML = available.length ?
                 available.map(r => `<option value="${r.id}">${r.name} (Capacity: ${r.capacity})</option>`).join('') :
                 '<option value="">No available rooms</option>';
+                
+            if (!unassigned.length || !available.length) {
+                msg.textContent = !unassigned.length ? 'No approved students need room assignment' : 'No rooms available for assignment';
+            }
         } catch (err) {
-            studentSelect.innerHTML = '<option value="">Error</option>';
-            roomSelect.innerHTML = '<option value="">Error</option>';
+            console.error('Error populating form:', err);
+            studentSelect.innerHTML = '<option value="">Error loading students</option>';
+            roomSelect.innerHTML = '<option value="">Error loading rooms</option>';
+            msg.textContent = 'Error loading data. Please try again.';
         }
     }
 
@@ -213,7 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const studentId = document.getElementById('assignStudent').value;
             const roomId = document.getElementById('assignRoom').value;
             const msg = document.getElementById('assignRoomMsg');
-            msg.textContent = 'Assigning...';
+            
+            if (!studentId || !roomId) {
+                msg.textContent = 'Please select both a student and a room';
+                return;
+            }
+            
+            msg.textContent = 'Assigning room...';
             try {
                 const res = await fetch('http://localhost:3000/api/admin/assign-room', {
                     method: 'POST',
@@ -223,14 +247,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({ applicationId: studentId, roomId })
                 });
+                
                 const data = await res.json();
-                msg.textContent = data.message || (res.ok ? 'Room assigned!' : 'Error assigning room.');
-                showAdminNotif(data.message || (res.ok ? 'Room assigned!' : 'Error assigning room.'), res.ok ? 'success' : 'error');
-                loadAssignments();
-                populateAssignRoomForm();
+                
+                if (res.ok) {
+                    msg.textContent = 'Room assigned successfully!';
+                    showAdminNotif('Room assigned successfully!', 'success');
+                    // Refresh both assignments and form
+                    await Promise.all([loadAssignments(), populateAssignRoomForm()]);
+                } else {
+                    msg.textContent = data.message || 'Error assigning room';
+                    showAdminNotif(data.message || 'Error assigning room', 'error');
+                }
             } catch (err) {
-                msg.textContent = 'Network error.';
-                showAdminNotif('Network error.', 'error');
+                console.error('Error assigning room:', err);
+                msg.textContent = 'Network error. Please try again.';
+                showAdminNotif('Network error. Please try again.', 'error');
             }
         });
     }
@@ -261,15 +293,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         <tr>
                             <th>Student Name</th>
                             <th>Email</th>
-                            <th>Room</th>
+                            <th>Assigned Room</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${assignments.map(a => `
+                        ${assignments.map(assignment => `
                             <tr>
-                                <td>${a.name}</td>
-                                <td>${a.email}</td>
-                                <td>${a.room_name}</td>
+                                <td>${assignment.name}</td>
+                                <td>${assignment.email}</td>
+                                <td>${assignment.room_name || 'Not assigned'}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -279,4 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tableDiv.innerHTML = '<div>Error loading assignments.</div>';
         }
     }
+
+    // Initial load
+    loadApplications();
 });
