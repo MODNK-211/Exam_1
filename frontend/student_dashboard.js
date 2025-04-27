@@ -55,20 +55,50 @@ document.addEventListener("DOMContentLoaded", async () => {
         const roomListingsDiv = document.getElementById('roomListings');
         roomListingsDiv.innerHTML = '<div>Loading rooms...</div>';
         try {
-            const response = await fetch('http://localhost:3000/api/student/rooms');
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const response = await fetch('http://localhost:3000/api/student/rooms', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch rooms');
+            }
+
             const rooms = await response.json();
+            
+            // Map room types to their corresponding images
+            const roomImageMap = {
+                'Double Occupancy with Fan': 'two_in_a_room_with_fan.jpg',
+                'Double Occupancy with AC': 'hostel_pic_four_Ac_twoinaroom.jpg',
+                'Single Occupancy with AC': 'hostel_pic_three_single_ac.jpg',
+                'Single Occupancy with Bathroom and Kitchen': 'hostel_pic_one.jpg'
+            };
+
+            if (!rooms || rooms.length === 0) {
+                roomListingsDiv.innerHTML = '<div>No rooms available at the moment.</div>';
+                return;
+            }
+
             roomListingsDiv.innerHTML = rooms.map(room => `
                 <div class="room-card">
-                    <img src="images/${room.image}" alt="${room.name}" class="room-card-img" />
+                    <img src="images/${roomImageMap[room.name] || 'hostel_pic_one.jpg'}" alt="${room.name}" class="room-card-img" />
                     <div class="room-card-body">
                         <div class="room-card-title">${room.name}</div>
-                        <div class="room-card-desc">${room.description}</div>
-                        <div class="room-card-occupancy">Occupancy: ${room.occupancy}</div>
+                        <div class="room-card-desc">${room.description || 'Comfortable living space with all necessary amenities'}</div>
+                        <div class="room-card-occupancy">Capacity: ${room.capacity} students</div>
                     </div>
                 </div>
             `).join('');
         } catch (err) {
-            roomListingsDiv.innerHTML = '<div>Error loading rooms.</div>';
+            console.error('Error loading rooms:', err);
+            roomListingsDiv.innerHTML = '<div>Error loading rooms. Please try again later.</div>';
         }
     }
 
