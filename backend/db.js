@@ -15,12 +15,6 @@ const setupSchema = async () => {
   const query = `
     CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-    -- Drop existing tables if they exist
-    DROP TABLE IF EXISTS room_assignments;
-    DROP TABLE IF EXISTS applications;
-    DROP TABLE IF EXISTS rooms;
-    DROP TABLE IF EXISTS users;
-
     CREATE TABLE IF NOT EXISTS users (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       name VARCHAR(255),
@@ -58,7 +52,6 @@ const setupSchema = async () => {
     throw error;
   }
 };
-
 
 const connectToDatabase = async () => {
   try {
