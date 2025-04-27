@@ -43,6 +43,12 @@ router.post(
     try {
       console.log('Received application request:', { studentId, roomPreference });
 
+      // First verify that the user exists
+      const userCheck = await pool.query('SELECT * FROM users WHERE id = $1', [studentId]);
+      if (userCheck.rows.length === 0) {
+        return res.status(400).json({ message: 'User not found. Please log out and log in again.' });
+      }
+
       // Check if the student has already applied
       const existingApplication = await pool.query(
         'SELECT * FROM applications WHERE student_id = $1',
@@ -93,6 +99,12 @@ router.get('/dashboard', authenticateStudent, async (req, res) => {
   const studentId = req.user.id;
 
   try {
+    // First verify that the user exists
+    const userCheck = await pool.query('SELECT * FROM users WHERE id = $1', [studentId]);
+    if (userCheck.rows.length === 0) {
+      return res.status(400).json({ message: 'User not found. Please log out and log in again.' });
+    }
+
     // Fetch the student's application status
     const application = await pool.query(
       'SELECT a.*, r.name as room_name FROM applications a LEFT JOIN rooms r ON a.room_id = r.id WHERE a.student_id = $1',

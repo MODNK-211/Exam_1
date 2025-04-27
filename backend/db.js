@@ -15,12 +15,13 @@ const setupSchema = async () => {
   const query = `
     CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+    -- Create tables if they don't exist
     CREATE TABLE IF NOT EXISTS users (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       name VARCHAR(255),
       email VARCHAR(255) UNIQUE,
       password VARCHAR(255),
-      role VARCHAR(50)
+      role VARCHAR(50) DEFAULT 'student'
     );
 
     CREATE TABLE IF NOT EXISTS rooms (
@@ -32,16 +33,17 @@ const setupSchema = async () => {
 
     CREATE TABLE IF NOT EXISTS applications (
       id SERIAL PRIMARY KEY,
-      student_id UUID REFERENCES users(id),
-      room_id INT REFERENCES rooms(id),
-      status VARCHAR(50),
+      student_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      room_id INT REFERENCES rooms(id) ON DELETE CASCADE,
+      status VARCHAR(50) DEFAULT 'pending',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS room_assignments (
       id SERIAL PRIMARY KEY,
-      room_id INT REFERENCES rooms(id),
-      student_id UUID REFERENCES users(id)
+      room_id INT REFERENCES rooms(id) ON DELETE CASCADE,
+      student_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 `;
 
@@ -61,6 +63,19 @@ const setupSchema = async () => {
       `;
       await pool.query(insertRoomsQuery);
       console.log('Initial room data inserted');
+    }
+
+    // Create a test admin user if no users exist
+    const userCount = await pool.query('SELECT COUNT(*) FROM users');
+    if (userCount.rows[0].count === '0') {
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      const insertAdminQuery = `
+        INSERT INTO users (name, email, password, role) VALUES
+        ('Admin User', 'admin@example.com', $1, 'admin')
+      `;
+      await pool.query(insertAdminQuery, [hashedPassword]);
+      console.log('Test admin user created');
     }
   } catch (error) {
     console.error('Error setting up schema:', error);
